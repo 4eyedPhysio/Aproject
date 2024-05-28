@@ -69,7 +69,7 @@ routes.post(`/login`, async (req,res)=>{
          // res.status(200).json({user:user._id, message:"login successful"})
 
          console.log(`login successful`)
-         return res.status(200).json({message:`login successful`});
+         return res.render(`createPost`);
       }
    } catch (err) {
       res.status(400).json({message:err.message})
