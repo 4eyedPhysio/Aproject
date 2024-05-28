@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Post State</title>
+</head>
+<body>
+
+    <%- include('partials/navigation') %>
+
+    <h1>Edit Post State</h1>
+
+    <form id="edit-state-form">
+        <input type="hidden" name="id" value="<%= post._id %>">
+        <p>Title: <%= post.title %></p>
+        <p>Description: <%= post.description %></p>
+        <p>Current State: <%= post.state %></p>
+        <button type="submit">Toggle State</button>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.getElementById('edit-state-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.querySelector('input[name="id"]').value;
+            try {
+                const response = await axios.put(`/blog/state/${id}`, {});
+                alert(response.data.message);
+                window.location.reload();
+            } catch (err) {
+                alert('Error updating post state');
+                console.error(err);
+            }
+        });
+    </script>
+
+</body>
+</html>

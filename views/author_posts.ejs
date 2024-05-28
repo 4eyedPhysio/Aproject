@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Author's Blog Posts</title>
+</head>
+<body>
+
+    <%- include('partials/navigation') %>
+
+    <h1>Your Blog Posts</h1>
+
+    <% if (posts.length > 0) { %>
+        <ul>
+            <% posts.forEach(post => { %>
+                <li>
+                    <a href="/blog/<%= post._id %>"><%= post.title %></a>
+                    <p><%= post.description %></p>
+                    <p>Tags:
+                        <% if (Array.isArray(post.tags)) { %>
+                            <% post.tags.forEach((tag, index) => { %>
+                                <%= tag %><%= index < post.tags.length - 1 ? ', ' : '' %>
+                            <% }) %>
+                        <% } else { %>
+                            <%= post.tags %>
+                        <% } %>
+                    </p>
+                    <p>State: <%= post.state %></p>
+                    <p>Reading Time: <%= post.reading_time %> minutes</p>
+                    <p>Posted on: <%= new Date(post.timeStamp).toLocaleDateString() %></p>
+                    <p>Post ID: <%= post._id %></p> 
+                </li>
+            <% }) %>
+        </ul>
+    <% } else { %>
+        <p>No posts found.</p>
+    <% } %>
+
+    <div>
+        <% if (page > 0) { %>
+            <a href="/blog/author/Post?page=<%= page - 1 %>&state=<%= state %>">Previous</a>
+        <% } %>
+        <% if (posts.length === contentsPerPage) { %>
+            <a href="/blog/author/Post?page=<%= page + 1 %>&state=<%= state %>">Next</a>
+        <% } %>
+    </div>
+
+</body>
+</html>

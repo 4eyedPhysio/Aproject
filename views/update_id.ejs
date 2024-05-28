@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Post ID</title>
+</head>
+<body>
+
+    <%- include('partials/navigation') %>
+
+    <h1>Enter Post ID to Edit post</h1>
+
+    <form action="/blog/post/update" method="GET">
+        <label for="post-id">Post ID:</label>
+        <input type="text" id="post-id" name="id" required>
+        <button type="submit">Submit</button>
+    </form>
+
+</body>
+</html>

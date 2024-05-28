@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog</title>
+</head>
+<body>
+
+    <%-include (`partials/navigation`); %>
+
+    <h1>Blog Posts</h1>
+    <form action="/blog" method="GET">
+        <input type="text" name="title" placeholder="Search by title">
+        <input type="text" name="author" placeholder="Search by author">
+        <input type="text" name="tag" placeholder="Search by tag">
+        <button type="submit">Search</button>
+    </form>
+    <% if (posts.length > 0) { %>
+        <ul>
+            <% posts.forEach(post => { %>
+                <li><a href="/blog/<%= post._id %>"><%= post.title %></a></li>
+            <% }) %>
+        </ul>
+    <% } else { %>
+        <p>No posts found.</p>
+    <% } %>
+</body>
+</html>

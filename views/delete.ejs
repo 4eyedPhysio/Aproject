@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Blog Post</title>
+</head>
+<body>
+    <h1>Delete Blog Post</h1>
+    <form id="deleteForm" method="POST" action="/blog/delete-post">
+        <label for="postId">Post ID:</label>
+        <input type="text" id="postId" name="postId" required>
+        <button type="submit">Delete Post</button>
+    </form>
+    <% if (post) { %>
+        <p>Post titled "<%= post.title %>" was deleted successfully.</p>
+    <% } %>
+</body>
+</html>

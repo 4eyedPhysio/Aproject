@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= post.title %></title>
+</head>
+<body>
+    <h1><%= post.title %></h1>
+    <p><%= post.body %></p>
+    <p>Author: <%= post.author %></p>
+    <p>Published on: <%= post.timeStamp %></p>
+    <p>Tags: <%= post.tags.join(', ') %></p>
+    <p>Reading Time: <%= post.reading_time %> minutes</p>
+    <p>Read Count: <%= post.read_count %></p>
+</body>
+</html>
