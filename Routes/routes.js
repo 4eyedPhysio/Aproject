@@ -8,6 +8,22 @@ const jwt = require(`jsonwebtoken`);
 require(`dotenv`).config();
 const secret = process.env.SECRET_KEY;
 
+const {validateSignIn, validateRegistration} = require(`../middleware/validator`);
+
+
+const redis = require(`redis`);
+const client = redis.createClient();
+const cacheMiddleware = require(`../middleware/cache_middleware`)
+const redisClient = require(`../integration/redis`).client;
+
+
+
+//to use joi, we have to create a schema for it to 
+// const signInSchema = joi.object({
+//    email: joi.string().email().required(),
+//    password: joi.string().min(3).max(10).required()
+// })
+
 
 //lets create the jwt token here
 
@@ -31,8 +47,15 @@ routes.get('/register', (req, res) => {
 
 routes.post(`/register`,async function(req,res){
 
- const {First_name, Last_name,email,password,Date_registered}= req.body;
- console.log(req.body);
+//  const {First_name, Last_name,email,password,Date_registered}= req.body;
+//  console.log(req.body);
+
+const {error,value}= validateRegistration(req.body);
+if(error){
+   console.log(error);
+   return res.status(400).send(error.details);
+}
+ const {First_name, Last_name,email,password,Date_registered}= value;
 
  try {
     const user = await User.create({First_name,Last_name, email, password, Date_registered});
@@ -56,7 +79,14 @@ routes.get('/login', (req, res) => {
 });
 
 routes.post(`/login`, async (req,res)=>{
-   const {email, password}= req.body;
+   // const {email, password}= req.body;
+   const {error,value}= validateSignIn(req.body);
+   if(error){
+      console.log(error);
+      return res.status(400).send(error.details);
+   }
+   //then once the req.body is validated,we assign it to value
+   const {email, password}= value;
    try {
       if(!email||!password){
          return res.status(400).json({errors:{
@@ -139,49 +169,59 @@ routes.get('/search', async (req, res) => {
 
 
 
-routes.get(`/blog`, async (req, res) => {
+routes.get('/blog', cacheMiddleware, async (req, res) => {
    const author = req.query.author;
    const title = req.query.title;
    const tag = req.query.tag;
-   const order = req.query.order === `descending` ? -1 : 1;  
-   const timeField = req.query.timeField || `timestamp`;
-
-   const query = { state: `published` };
+   const order = req.query.order === 'descending' ? -1 : 1;
+   const timeField = req.query.timeField || 'timestamp';
+ 
+   const query = { state: 'published' };
    const page = req.query.page || 0;
    const contentsPerPage = 20;
    const skippedPage = page * contentsPerPage;
-
-   try {
-       if (author) {
-           query.author = author;
-       }
-
-       if (tag) {
-           query.tags = new RegExp(tag, `i`);
-       }
-
-       if (title) {
-           query.title = new RegExp(title, `i`);
-       }
-
-       const sortOption = {};
-       sortOption[timeField] = order;
-
-       const posts = await Post.find(query)
-           .sort(sortOption)
-           .skip(skippedPage)
-           .limit(contentsPerPage);
-
-      //  if (posts.length === 0) {
-      //      return res.status(404).json({ message: "Posts not found" });
-      //  }
-       res.render('blog', { posts });
-      //  res.status(200).json({ posts });
-   } catch (err) {
-       console.error("Error retrieving posts:", err);
-       res.status(500).json({ message: "Error returning posts", err: err.message });
+ 
+   if (author) {
+     query.author = author;
    }
-});
+ 
+   if (tag) {
+     query.tags = new RegExp(tag, 'i');
+   }
+ 
+   if (title) {
+     query.title = new RegExp(title, 'i');
+   }
+ 
+   const sortOption = {};
+   sortOption[timeField] = order;
+ 
+   const cacheKey = `blog:${JSON.stringify(req.query)}`;
+ 
+   if (!redisClient.isOpen) {
+     await redisClient.connect();
+   }
+ 
+   try {
+     const posts = await Post.find(query)
+       .sort(sortOption)
+       .skip(skippedPage)
+       .limit(contentsPerPage);
+ 
+     // Ensure posts is always an array
+     const postsArray = Array.isArray(posts) ? posts : [];
+ 
+     // Store the fetched data in cache with an expiration time of 10 minutes (600 seconds)
+     await redisClient.set(cacheKey, JSON.stringify(postsArray), { EX: 600 });
+ 
+     // Return the fetched data
+     return res.render('blog', { posts: postsArray });
+   } catch (err) {
+     console.error("Error retrieving posts:", err);
+     return res.status(500).json({ message: "Error returning posts", err: err.message });
+   }
+ });
+ 
 
 
 
